@@ -50,7 +50,7 @@
     ((> counter N)
      (cons row Brow))
     (else
-     (CreateRowAux N M (+ counter 1) panel (cons (list) row )(cons Brow (cons (makebutton counter M panel)(list counter M))   )))))
+     (CreateRowAux N M (+ counter 1) panel (cons 0 row )(cons Brow (cons (makebutton counter M panel)(list counter M))   )))))
 
 
 ;init function create the button and matrix
