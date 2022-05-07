@@ -1,0 +1,1 @@
+("8.4" ta6nt ("696a9e37b98ee542d6b5a30a4120765736ec5070" . "6375d730df0cfad520247f921bf91c03384fd853") #"C:\\trabajos\\V semestre\\lenguajes\\tictactoc\\TacTacToe-Racket\\list_manipulation.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"gui" #"lang" #"reader.rkt") (collects #"racket" #"gui.rkt") (collects #"racket" #"runtime-config.rkt"))
