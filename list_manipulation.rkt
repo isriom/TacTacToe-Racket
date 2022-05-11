@@ -97,30 +97,33 @@
 ;;matrixGet test
 (matrixGet MatrixPrueba 2 2)
 
+(provide aplicateAll)
+
 ;;aplicateAll 
 ;;Parametros, (Matrix sobre la que trabaja)(funcion a aplicar)
 ;;aplica una funcion para cada celda de una matrix
+;; la funcion debe tener la Fomra (lambda N M X) Donde N y M son los indices y X el valor de la casilla
 (define (aplicateAll matrix function) (aplicateAllX matrix function))
 
+
 ;aplicate the function to all the elments of a line
-(define (aplicateAllY line function)
+(define (aplicateAllY line function M [N 0])
   (cond
     (
      (null?(cdr line))
-           (list (function (car line))))
+           (function N M (car line)))
      (else
-       (cons (function(car line))(aplicateAllY (cdr line) function))
+       (append (function N M (car line))(aplicateAllY (cdr line) function M (+ N 1)))
        )))
 
 ;aplicate the function to all the lines of a matrix
-(define (aplicateAllX matrix function)
+(define (aplicateAllX matrix function [M 0])
   (cond
     (
      (null?(cdr matrix))
-           (cons  (aplicateAllY (car matrix) function)(cdr matrix)))
+           (append  (aplicateAllY (car matrix) function M)(cdr matrix)))
      (else
-      (cons (aplicateAllY (car matrix) function)(aplicateAllX (cdr matrix) function))
-
+      (append (aplicateAllY (car matrix) function M)(aplicateAllX (cdr matrix) function (+ M 1)))
       )))
 
 ;;Test aplicateAll
