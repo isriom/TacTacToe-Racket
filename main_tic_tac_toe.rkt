@@ -10,24 +10,38 @@
         (else (voraz matrix N M char))
    ))
 
-(define (voraz matrix N M char)(jugarIA matrix (minmax(car matrix) (conjunto_de_candidatos (car matrix))))) ;implementar algoritmo aqui y llamar sobre la matrix resultante a checkWin
+;;;Funciones de implementacion de la logica del algortimo voraz
 
-(define (minmax matrix candidatos [depth 1])(cond ((null? (cdr candidatos))  (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "X") (list) depth (caar candidatos) (cadar candidatos)"X"))
-                                                  ((zero? depth)(solucion matrix candidatos "O" (list) -1))
-                                                  ((zero?(remainder depth 2))((seleccion (cons (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "O") (list) depth (caar candidatos) (cadar candidatos) "O")(minmax matrix (cdr candidatos) depth)))))
-                                                  (else (seleccion (append (list(minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "X") (list) depth (caar candidatos) (cadar candidatos)"X"))(list(minmax matrix (cdr candidatos) depth)))))))
+;;voraz
+;;parametros (conjunto de matrixes de comunicacion GUI-Logica)(Columna donde se jugo)(Fila donde se jugo)(caracter jugado)
+;;funcion auxiliar para legibilidad
+;;Llama a la implementación del algoritmo voraz principal este recibe una matriz de tipo M y N donde se aplica una función de minmax de profundidad 1, además se evalúa los candidatos para reducir el tiempo de operacion.
+(define (voraz matrix N M char)(jugarIA matrix (minmax(car matrix) (conjunto_de_candidatos (car matrix)))))
 
+;; minmax
+;; Parametros (matrix de juego)(lista de candidatos validos)(profundidad, 1 por default)
+;;La función minmax es un método de decisión para minimizar la pérdida máxima esperada en juegos con adversario.
+;;Este posee una profundidad de 1 es decir va a observar las opciones de los candidatos para un movimiento en el futuro.
+;;retorna la solucion decidida por el algortimo voraz
+(define (minmax matrix candidatos [depth 1])(cond ((null? (cdr candidatos))  (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "O") (list) depth (caar candidatos) (cadar candidatos)"O"))
+                                                  ((zero? depth)(solucion matrix candidatos "X" (list) -1))
+                                                  ((zero?(remainder depth 2))((seleccion (cons (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "X") (list) depth (caar candidatos) (cadar candidatos) "X")(minmax matrix (cdr candidatos) depth)))))
+                                                  (else (seleccion (append (list(minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "O") (list) depth (caar candidatos) (cadar candidatos)"O"))(list(minmax matrix (cdr candidatos) depth)))))))
 
+;;Función auxiliar del minmax
+;; si es una solucion retornela sin intentar encontrar una mejor en sus derivadas
+;; si no busque en sus derivadas una solucion para el jugador contrario
 (define (minmaxAux matrix candidatos  depth N M char)(cond ((checkWin? matrix N M char) (list N M 1))
                                                       (else( minmax matrix (conjunto_de_candidatos matrix) (- depth 1)))))
 
 ;;jugarIA
 ;;Parametros (conjunto de matrices de intecambio de informacion GUI-Main)(solucion)
 ;; ejecuta la solucion y devuelve la matrix modificada
-(define (jugarIA matrix solucion)(send (caddr matrix) set-label "X win")(aplicateTo (cadr matrix) (car solucion)(cadr solucion) (lambda(x)(send x enable #f)(send x set-label "X")))(cons(matrixRemplace (car matrix) (car solucion) (cadr solucion) "X")(cdr matrix)))
+(define (jugarIA matrix solucion)(cond((checkWin? (matrixRemplace (car matrix) (car solucion) (cadr solucion) "O")(car solucion) (cadr solucion) "O" )(send (caddr matrix) set-label "O win")))(aplicateTo (cadr matrix) (car solucion)(cadr solucion) (lambda(x)(send x enable #f)(send x set-label "O")))(cons(matrixRemplace (car matrix) (car solucion) (cadr solucion) "O")(cdr matrix)))
 
 
 ;;;Algoritmo de comprobacion de fin de juego
+
 ;;checkWin 
 ;;Parametros, (Matrix sobre la que trabaja)(columna donde se jugo)(fila donde se jugo)(caracter de jugador)
 ;;empezara a recorrer la matrix en las 8 posibles direcciones desde donde se jugar hasta llegar al limite o encontrar una ficha diferente a la jugada,
