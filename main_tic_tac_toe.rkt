@@ -7,11 +7,24 @@
 ;;comprueba sí se gano el juego al poner la ficha, sino ejecute 
 (define (playTurn matrix N M char)
   (cond ((equal? (checkWin? (car matrix) N M char)#t) (send (caddr matrix) set-label (string-append  char  " win")))
-        (else (minimax matrix N M char))
+        (else (voraz matrix N M char))
    ))
 
-(define (minimax matrix N M char) matrix) ;implementar algoritmo aqui y llamar sobre la matrix resultante a checkWin
+(define (voraz matrix N M char)(jugarIA matrix (minmax(car matrix) (conjunto_de_candidatos (car matrix))))) ;implementar algoritmo aqui y llamar sobre la matrix resultante a checkWin
 
+(define (minmax matrix candidatos [depth 1])(cond ((null? (cdr candidatos))  (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "X") (list) depth (caar candidatos) (cadar candidatos)"X"))
+                                                  ((zero? depth)(solucion matrix candidatos "O" (list) -1))
+                                                  ((zero?(remainder depth 2))((seleccion (cons (minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "O") (list) depth (caar candidatos) (cadar candidatos) "O")(minmax matrix (cdr candidatos) depth)))))
+                                                  (else (seleccion (append (list(minmaxAux (matrixRemplace matrix (caar candidatos) (cadar candidatos) "X") (list) depth (caar candidatos) (cadar candidatos)"X"))(list(minmax matrix (cdr candidatos) depth)))))))
+
+
+(define (minmaxAux matrix candidatos  depth N M char)(cond ((checkWin? matrix N M char) (list N M 1))
+                                                      (else( minmax matrix (conjunto_de_candidatos matrix) (- depth 1)))))
+
+;;jugarIA
+;;Parametros (conjunto de matrices de intecambio de informacion GUI-Main)(solucion)
+;; ejecuta la solucion y devuelve la matrix modificada
+(define (jugarIA matrix solucion)(send (caddr matrix) set-label "X win")(aplicateTo (cadr matrix) (car solucion)(cadr solucion) (lambda(x)(send x enable #f)(send x set-label "X")))(cons(matrixRemplace (car matrix) (car solucion) (cadr solucion) "X")(cdr matrix)))
 
 
 ;;;Algoritmo de comprobacion de fin de juego
@@ -43,13 +56,41 @@
 
 
 ;;Funcion objetivo
-;;Parametros(Matrix de juego) (columna donde se jugo)(fila donde se jugo)(caracter de jugador)
+;;Parametros(Matrix de juego) (columna donde se jugo)(fila donde se jugo)(caracter de jugador)(multiplicador de valor)
 ;;aplicara checkWin? sobre la matrix de juego
-;;retornara un 1 sí gano el caracter otorgado o un 0 sí no se llega a una solucion
-(define (objetivo matrix N M char)(cond ((checkWin? matrix N M char) 1) (else 0)))
+;;retornara un 1*multiplicador sí gano el caracter otorgado o un 0 sí no se llega a una solucion
+(define (objetivo matrix N M char [multi 1])(cond ((checkWin? matrix N M char) (* 1 multi)) (else 0)))
 
 ;;Funcion viabilidad? 
 ;;Parametros(Matrix de juego)(columna a jugar)(fila a jugar)
 ;;Comprobara sí el valor de la matrix en una posicion es una lista vacia/0
 ;;retorna #t sí esta vacia y #f sí esta ocupada
-(define (viabilidad? matrix N M)(cond((equal? (matrixGet matrix N M) 0) #t)(else #f)))
+(define (viabilidad? matrix [N 0] [M 0])(cond((equal? (matrixGet matrix N M) 0) #t)(else #f)))
+
+;;Funcion conjunto_de_candidatos
+;;Parametros (matrix de juego)
+;;comprobara toda la matrix y y seleccionara los campos libres
+;;retorna una lista con pares de indices de la matrix
+(define (conjunto_de_candidatos matrix) (aplicateAll matrix (lambda (N M X)(cond((viabilidad? (list(list X)))(println matrix)(println (list N M X))(list(list N M)))
+                                                                                 (else '())))))
+;;Funcion seleccion
+;;Parametros (matrix de juego) (candidatos (N M X))
+;;comprobara cual candidato tiene mayor puntaje y lo seleccionara
+;;retorna una lista con pares de indices de la matrix y el valor del candidato
+(define (seleccion candidatos [mayor (list )])(cond((null? candidatos) mayor)
+                                                 ((null? mayor)(seleccion (cdr candidatos)(car candidatos)))
+                                                 ((> (caddar candidatos)0)(seleccion (cdr candidatos)(car candidatos)))
+                                                 ((and (equal? (caddar candidatos) -1)(equal? (caddr mayor) 0) #t)(seleccion (cdr candidatos)(car candidatos)))
+                                                 (else (seleccion  (cdr candidatos) mayor))))
+
+;;Funcion solución
+;;Parametros (matrix de juego)(conjunto de candidatos)(caracter de jugador)(conjunto de soluciones posibles)
+;;buscara el mejor candidato para una matrix de juego y un conjunto de candidatos.
+;;Para ello obtendra la solucion de cada candidato aplicando la funcion objetivo y agregando su valor al candidato
+;; una vez halla creado todas las soluciones selecciona la mejor
+;;retorna una lista con la columna, fila y valor de la solucion
+(define (solucion matrix candidatos char [soluciones (list)] [multi 1])(cond ((null?  candidatos)(seleccion soluciones))
+                                                          (else (solucion matrix (cdr candidatos) char (cons (append (car candidatos)(list(objetivo (matrixRemplace matrix (caar candidatos) (cadar candidatos) char)(caar candidatos)(cadar candidatos)char multi))) soluciones)multi))
+                                                          ))
+
+

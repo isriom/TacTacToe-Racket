@@ -20,12 +20,12 @@
 
 ; Make a button in the frame
 (define (makebutton n m Ppanel)(new button% [parent Ppanel]
-             [label (string-append (number->string n)"."(number->string m))]
+             [label (string-append (number->string (- n 1))"."(number->string (- m 1)))]
              ; Callback procedure for a button click:
              [callback (lambda (button event)
-                         (send button set-label "x")(send button enable #f)
-                         (set! GameMatrix (cons (matrixRemplace (car GameMatrix) (- n 1) (- m 1) "X")(cdr GameMatrix)))
-                         (set! GameMatrix (playTurn GameMatrix (- n 1) (- m 1) "X") ))]))
+                         (send button set-label "O")(send button enable #f)
+                         (set! GameMatrix (cons (matrixRemplace (car GameMatrix) (- n 1) (- m 1) "O")(cdr GameMatrix)))
+                         (set! GameMatrix (playTurn GameMatrix (- n 1) (- m 1) "O") )(println (car GameMatrix)))]))
 
 ; create a panel to aling buttons
 (define (makeVPanel) (new horizontal-panel%  [parent MainColumn]
